@@ -2,6 +2,10 @@ from connect_mysql import connect_database
 
 user_dict = {}
 
+conn = connect_database()
+if conn is not None:
+    cursor = conn.cursor()
+
 class UserOps:
     def __init__(self, library_id, birthdate):
         self.__id = library_id
@@ -17,29 +21,33 @@ class UserOps:
 def add_user(): 
     name = input("Enter the user's name: ") 
     library_id = input("Enter the user's library ID: ")
-    birthdate = input("Enter the user's birthday: ")
     
-    user_dict[name] = {
-        "Library ID": library_id,
-        "Birth Date": birthdate
-    }
+    # query to add User to database    
+    query = "INSERT INTO users (name, library_id) VALUES (%s, %s)"
+    cursor.execute(query, (name, library_id))
+    conn.commit()
+    query_display = "SELECT * FROM users WHERE name = %s"
+    cursor.execute(query_display, (name, ))
+    result = cursor.fetchall()
 
-    print(f"{name} has been added to the list!")
-    print(f"Contact: ", user_dict[name], sep="\n")
+    print(f"User:", result, sep="\n")
 
 def view_user():
     name = input("Enter user's name: ")
-    if name in user_dict:
-        print(f"Contact: ", user_dict[name])
-    else:
-        print("There is no users in the system!")
+
+    # query to view a user in the database
+    query = "SELECT * FROM users WHERE name = %s"
+    cursor.execute(query, (name, ))
+    result = cursor.fetchall()
+    print("User result in database: ", result, sep='\n')
 
 
 def display_user():
-    if user_dict:
-        print("Your current contact list:", user_dict, sep="\n")
-    else:
-        print("No contacts in the current list")
+    # query to display all users in the database
+    query = "SELECT * FROM users"
+    cursor.execute(query)
+    result = cursor.fetchall()
+    print("Users: ", result, sep="\n")
 
 
 def user_menu():

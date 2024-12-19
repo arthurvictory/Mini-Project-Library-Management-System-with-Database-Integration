@@ -3,6 +3,10 @@ from connect_mysql import connect_database
 # operations for books
 book_dict = {}
 
+conn = connect_database()
+if conn is not None:
+    cursor = conn.cursor()
+
 class BookOps:
     def __init__(self, title, author, genre, publication_date):
         self.__title = title
@@ -40,42 +44,64 @@ def add_book():
     title = input("Enter book title: ") 
     author = input("Enter book author: ") 
     genre = input("Enter book genre: ") 
-    publication_date = input("Enter publication date: ") 
-    book = BookOps(title, author, genre, publication_date) 
-    book_dict[title] = book 
-    print(f"Book '{title}' added successfully!")
+    publication_date = input("Enter publication date: ")  
+    
+    # query to add book to the library
+    query = "INSERT INTO books (title, author, genre, publication_date) VALUES (%s, %s, %s, %s)"
+    cursor.execute(query, (title, author, genre, publication_date))
+    conn.commit()
+    query_display = "SELECT * FROM books WHERE title = %s"
+    cursor.execute(query_display, (title, ))
+    result = cursor.fetchall()
+    
+    print("Book has been added to the list!")
+    print(f"Book:", result, sep="\n")
 
 def borrow_book(): 
-    title = input("Enter the title of the book you wish to borrow: ") 
-    if title in book_dict and book_dict[title].is_available(): 
-        book_dict[title].set_availability(False)
+    title = input("Enter the title of the book you wish to borrow: ")
+    query = "SELECT availability FROM books WHERE title = %s"
+    cursor.execute(query, (title, ))
+    result = cursor.fetchone()
+
+    if result and result[0]:
+        query = "UPDATE books SET availability = %s WHERE title = %s"
+        cursor.execute(query, (False, title))
+        conn.commit()
         print(f"Book '{title}' has been borrowed.")
     else: 
         print("This book is not available or does not exist in the database.")
 
 def return_book():
     title = input("Enter the book you wish to return: ")
-    if title in book_dict and not book_dict[title].is_available():
-        book_dict[title].set_availability(True)
+    query = "SELECT availability FROM books WHERE title = %s"
+    cursor.execute(query, (title, ))
+    result = cursor.fetchone()
+
+    if not result[0]:
+        query = "UPDATE books SET availability = %s WHERE title = %s"
+        cursor.execute(query, (True, title))
+        conn.commit()
         print(f"This {title} has been returned to the library")
     else:
         print("This book was not borrowed or does not exist in the database")
 
 def search_book():
     title = input("Enter the book you wish to search for: ")
-    if title in book_dict:
-        book_dict[title].display_info()
-    else:
-        print("Book is not in the library.")
+    
+    # Query to search for books in the system
+    query = "SELECT * FROM books WHERE title = %s"
+    cursor.execute(query, (title, ))
+    result = cursor.fetchall()
+    print("Author results in database: ", result, sep='\n')
     
 def display_book():
-    if not book_dict:
-        print("No books in the library")
-    else:
-        for book in book_dict.values():
-            book.display_info()
+    # Query to display list of books in the database
+    query = "SELECT * FROM books"
+    cursor.execute(query)
+    result = cursor.fetchall()
+    print(" Books: ", result, sep="\n")
 
-    # Menu Control
+# Menu Control
 def book_menu():
     while True:
         print("""
@@ -106,5 +132,17 @@ def book_menu():
             break 
         else: 
             print("Invalid option, please try again.")
+
+if conn is not None: 
+    try: 
+        cursor = conn.cursor() 
+        # Run the user menu 
+        book_menu() 
+         
+    except Exception as e: 
+        print(f"Error: {e}") 
     
-book_menu()
+    finally: 
+        cursor.close() 
+        conn.close() 
+        print("Connection closed.")

@@ -19,6 +19,7 @@ class AuthorOps:
         return self.__biography
     
 def add_author():
+    
     name = input("Enter the Author's name: ") 
     biography = input("Enter the Author's Biography: ")
 
@@ -27,7 +28,7 @@ def add_author():
     cursor.execute(query, (name, biography))
     conn.commit()
     query_display = "SELECT * FROM authors WHERE name = %s"
-    cursor.execute(query_display)
+    cursor.execute(query_display, (name, ))
     result = cursor.fetchall()
     
     print("Author has been added to the list!")
@@ -35,9 +36,10 @@ def add_author():
 
 def view_author():
     name = input("Enter Author's name: ")
-    # query to view the a specific Author in the database
+
+    # query to view a specific Author in the database
     query = "SELECT * FROM authors WHERE name = %s"
-    cursor.execute(query, (name))
+    cursor.execute(query, (name, ))
     result = cursor.fetchall()
     print("Author results in database: ", result, sep='\n')
 
@@ -72,3 +74,17 @@ def user_menu():
             break
         else:
             print("That's not a valid option, try again!")
+
+if conn is not None: 
+    try: 
+        cursor = conn.cursor() 
+        # Run the user menu 
+        user_menu() 
+         
+    except Exception as e: 
+        print(f"Error: {e}") 
+    
+    finally: 
+        cursor.close() 
+        conn.close() 
+        print("Connection closed.")

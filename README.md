@@ -2,13 +2,12 @@
 
 ## Introduction of the Program:
 
-Welcome to my mini project for Coding Temple! This project is based on making a Contact management system.
-This project will assist you in managing all your contacts in a list and also write it to a file and import the file back
-to the system.
+Welcome to my mini project for Coding Temple! This project is based on making a Library management system with database integration! It connects to a local
+database to store all its information.
 
 ## Installation of the Program:
 
-To install the program make sure you download the .py file and run it in your compiler to execute the program.
+To install the program make sure you download the .py files and run it in your compiler to execute the program.
 
 ## How to use the program:
 
